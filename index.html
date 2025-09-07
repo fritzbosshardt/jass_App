@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zweier-Jass</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6feb">
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f6f7f8;color:#0b0f13}
+  .wrap{max-width:720px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #e6e7eb;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.05);margin-bottom:14px}
+  .card h2{margin:0;padding:12px 14px;border-bottom:1px solid #e6e7eb;font-size:18px}
+  .card .b{padding:14px}
+  label{display:block;font-size:12px;text-transform:uppercase;color:#667085;margin-bottom:6px}
+  input[type=number]{width:100%;padding:10px 12px;border:1px solid #e6e7eb;border-radius:10px;font-size:16px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:flex;border:1px solid #e6e7eb;border-radius:10px;overflow:hidden}
+  .seg button{flex:1;padding:8px 10px;background:#fff;border:0;border-right:1px solid #e6e7eb;cursor:pointer}
+  .seg button:last-child{border-right:0}
+  .seg .a{background:#eef5ff;font-weight:700;color:#174ea6}
+  .radio{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .box{display:flex;align-items:center;gap:8px;border:1px solid #e6e7eb;padding:8px 10px;border-radius:10px}
+  .btn{display:inline-block;width:100%;padding:12px 14px;border-radius:10px;border:1px solid #d0d5dd;background:#1f6feb;color:#fff;font-weight:700;cursor:pointer}
+  .btn2{display:inline-block;width:100%;padding:12px 14px;border-radius:10px;border:1px solid #d0d5dd;background:#fff;font-weight:700;cursor:pointer}
+  .danger{background:#e03131;border-color:#e03131;color:#fff}
+  .muted{color:#667085;font-size:13px}
+  .sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .sum{background:#fff;border:1px solid #e6e7eb;border-radius:10px;padding:10px}
+  .sum .n{font-size:13px;color:#667085}
+  .sum .v{font-size:28px;font-weight:800}
+  .tabnums{font-variant-numeric:tabular-nums}
+  ul{list-style:none;margin:0;padding:0}
+  li{background:#fff;border:1px solid #e6e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+  .top{display:flex;justify-content:space-between;color:#667085;font-size:12px}
+  .install-hint{background:#fff3cd;border:1px solid #ffe69c;color:#664d03;padding:10px;border-radius:10px;margin-bottom:10px}
+  .ewig{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h2>Zweier-Jass</h2>
+    <div class="b">
+      <div id="pwaHint" class="install-hint" style="display:none">
+        Tipp: Ueber das Browser-Menue <b>Zum Startbildschirm hinzufuegen</b>, damit es wie eine App startet und offline verfuegbar ist.
+      </div>
+
+      <div class="ewig">
+        <div class="sum">
+          <div class="n">Ewiges Spiel – Fritz</div>
+          <div class="v tabnums" id="ewigA">0</div>
+        </div>
+        <div class="sum">
+          <div class="n">Ewiges Spiel – Iva</div>
+          <div class="v tabnums" id="ewigB">0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Rundenart</label>
+        <div class="seg">
+          <button id="m1" class="a" onclick="setM(1)">1x</button>
+          <button id="m2" onclick="setM(2)">2x</button>
+          <button id="m3" onclick="setM(3)">3x</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Punkte eingegeben fuer</label>
+        <div class="radio">
+          <div class="box"><input type="radio" name="for" id="fA" value="A" checked onclick="app.for='A'; save();"><label for="fA" style="margin:0">Fritz</label></div>
+          <div class="box"><input type="radio" name="for" id="fB" value="B" onclick="app.for='B'; save();"><label for="fB" style="margin:0">Iva</label></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label for="pts">Anzahl Punkte (0–157)</label>
+        <input id="pts" type="number" min="0" max="157" placeholder="z. B. 93">
+        <div id="msg" class="muted" style="margin-top:6px"></div>
+        <button class="btn" style="margin-top:8px" onclick="addRound()">Runde speichern</button>
+      </div>
+
+      <div class="sumgrid">
+        <div class="sum">
+          <div class="n">Fritz (Summe)</div>
+          <div class="v tabnums" id="sumA">0</div>
+        </div>
+        <div class="sum">
+          <div class="n">Iva (Summe)</div>
+          <div class="v tabnums" id="sumB">0</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <button class="btn2" onclick="undo()">Letzte Runde rueckgaengig</button>
+        <button class="btn2 danger" onclick="resetAll()">Zuruecksetzen</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <button class="btn2" onclick="exportCSV()">Export als CSV</button>
+        <button class="btn2" onclick="bilanzieren()">Runden bilanzieren</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Runden</h2>
+    <div class="b">
+      <p class="muted" id="empty">Noch keine Runden erfasst.</p>
+      <ul id="list"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  document.getElementById('pwaHint').style.display = '';
+});
+
+// State mit fixen Namen Fritz (A) und Iva (B)
+var app = { m:1, for:'A', rounds:[], ewig:{A:0,B:0} };
+const STORAGE_KEY = 'zweierjass_v1';
+
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(app)); }catch(e){} }
+function load(){ try{ var s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if(s) app=s; }catch(e){} }
+function setM(n){ app.m=n; ['m1','m2','m3'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('a'); }); var el2=document.getElementById('m'+n); if(el2) el2.classList.add('a'); save(); }
+
+function render(){
+  // Summen berechnen
+  var sumA=0,sumB=0, list=document.getElementById('list'); list.innerHTML='';
+  if(app.rounds.length===0){ document.getElementById('empty').style.display=''; } else { document.getElementById('empty').style.display='none'; }
+  for(var i=0;i<app.rounds.length;i++){ var r=app.rounds[i]; sumA+=r.tA; sumB+=r.tB;
+    var li=document.createElement('li'); li.innerHTML='<div class="top"><span>'+new Date(r.t).toLocaleTimeString()+'</span><span>Rundenart: '+r.m+'x</span></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">'+
+      '<div><b>Fritz</b><div class="tabnums">roh: '+r.pA+' • gezahlt: <b>'+r.tA+'</b></div></div>'+
+      '<div><b>Iva</b><div class="tabnums">roh: '+r.pB+' • gezahlt: <b>'+r.tB+'</b></div></div>'+
+      '</div>';
+    list.insertBefore(li,list.firstChild);
+  }
+  document.getElementById('sumA').textContent = sumA;
+  document.getElementById('sumB').textContent = sumB;
+  document.getElementById('ewigA').textContent = app.ewig.A || 0;
+  document.getElementById('ewigB').textContent = app.ewig.B || 0;
+}
+
+function addRound(){
+  var BASE=157;
+  var raw = Number(String(document.getElementById('pts').value).replace(',','.'));
+  if(isNaN(raw)){ document.getElementById('msg').textContent='Bitte eine Zahl eingeben.'; return; }
+  if(raw<0||raw>BASE){ document.getElementById('msg').textContent='Wert muss zwischen 0 und '+BASE+' liegen.'; return; }
+  document.getElementById('msg').textContent='';
+  var c = Math.max(0, Math.min(BASE, Math.round(raw)));
+  var pA = app.for==='A'? c : BASE - c;
+  var pB = BASE - pA;
+  var r = { m:app.m, pA:pA, pB:pB, tA:pA*app.m, tB:pB*app.m, t:Date.now() };
+  app.rounds.unshift(r);
+  document.getElementById('pts').value='';
+  save(); render();
+}
+
+function undo(){ if(app.rounds.length){ app.rounds.shift(); save(); render(); } }
+function resetAll(){ if(confirm('Wirklich alles zuruecksetzen (Runden, aber nicht Ewiges Spiel)?')){ app.rounds=[]; save(); render(); } }
+
+function exportCSV(){
+  var h=['Zeit','Rundenart (x)','Fritz (roh)','Iva (roh)','Fritz (gezaehlt)','Iva (gezaehlt)','Summe Fritz bis hier','Summe Iva bis hier'];
+  var sumA=0,sumB=0, lines=[h.join(',')];
+  for(var i=app.rounds.length-1;i>=0;i--){ var r=app.rounds[i]; sumA+=r.tA; sumB+=r.tB;
+    lines.push([new Date(r.t).toLocaleString(), r.m, r.pA, r.pB, r.tA, r.tB, sumA, sumB].join(','));
+  }
+  var csv = lines.join('\n');
+  var a = document.createElement('a');
+  a.setAttribute('href','data:text/csv;charset=utf-8,'+encodeURIComponent(csv));
+  a.setAttribute('download','zweierjass_'+Date.now()+'.csv');
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+// Neuer Button: Runden bilanzieren
+function bilanzieren(){
+  var sumA=0,sumB=0;
+  for(var i=0;i<app.rounds.length;i++){ var r=app.rounds[i]; sumA+=r.tA; sumB+=r.tB; }
+  if(sumA===0 && sumB===0){ alert('Keine Runden vorhanden.'); return; }
+  if(sumA===sumB){ alert('Gleichstand – niemand erhaelt einen Punkt im Ewigen Spiel.'); app.rounds=[]; save(); render(); return; }
+  if(sumA>sumB){ app.ewig.A = (app.ewig.A||0)+1; } else { app.ewig.B = (app.ewig.B||0)+1; }
+  app.rounds = [];
+  save(); render();
+}
+
+load(); render();
+</script>
+</body>
+</html>
